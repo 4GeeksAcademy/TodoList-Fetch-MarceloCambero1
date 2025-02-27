@@ -1,18 +1,91 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import "./TodoList.css";
 
 const TodoList = () => {
   const [tasks, setTasks] = useState([]); 
   const [newTask, setNewTask] = useState("");
 
-  const handleAddTask = () => {
-    if (newTask.trim() === "") return;
-    setTasks([...tasks, newTask]);
-    setNewTask("");
+  useEffect(() => {
+    fetchTasks()
+  },[])
+
+  const fetchTasks = async () => {
+    try {
+      // 👉 Hacemos la petición GET
+      // fetch por defecto hace una petición GET, por eso no necesitamos especificar el método
+      const response = await fetch(
+        "https://playground.4geeks.com/todo/users/camberotje"
+      );
+
+      // 👉 Verificamos si la petición fue exitosa
+      if (!response.ok) {
+        throw new Error("¡Vaya! No hemos podido obtener las tareas!");
+      }
+
+      // 👉 Convertimos la respuesta a JSON
+      const data = await response.json();
+
+      // 👉 Guardamos los datos en el estado
+      setTasks(data.todos);
+    } catch (error) {
+      console.log(error)
+    } 
   };
 
-  const handleDeleteTask = (indexToDelete) => {
-    setTasks((prevTasks) => prevTasks.filter((_, index) => index !== indexToDelete));
+  const handleAddTask = async () => {
+    if (newTask.trim() === "") return;
+
+    try {
+      // 👉 Hacemos la petición POST
+      const response = await fetch('https://playground.4geeks.com/todo/todos/camberotje', {
+        method: 'POST', // 👈 Especificamos que es POST
+        headers: {
+          'Content-Type': 'application/json', // 👈 Indicamos que enviamos JSON
+        },
+        // 👉 Convertimos nuestro objeto a string JSON
+        body: JSON.stringify({
+          label: newTask,
+          is_done: false
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al crear la tarea');
+      }
+
+      const data = await response.json();
+      console.log(data)
+      setTasks([...tasks, data]);
+      setNewTask("");
+    } catch (error) {
+      console.log(error)
+    }
+
+  };
+
+  const handleDeleteTask = async (id) => {
+
+    try {
+      // 👉 Hacemos la petición DELETE
+      const response = await fetch(
+        `https://playground.4geeks.com/todo/todos/${id}`,
+        {
+          method: 'DELETE', // 👈 Especificamos que es DELETE
+        }
+      );
+
+      if (!response.ok) throw new Error('Error al borrar la tarea');
+
+      // Si todo va bien, actualizamos la lista local
+      // Esto se llama "Optimistic Update" - actualizamos la UI antes de
+      // tener confirmación del servidor, asumiendo que todo irá bien
+
+      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+
+    } catch (error) {
+    console.log(error)
+    }
+
   };
 
   const handleKeyDown = (e) => {
@@ -38,8 +111,8 @@ const TodoList = () => {
       <ul>
         {tasks.map((task, index) => (
           <li key={index}>
-            {task}
-            <button className='delete-btn' onClick={() => handleDeleteTask(index)}>X</button>
+            {task.label}
+            <button className='delete-btn' onClick={() => handleDeleteTask(task.id)}>X</button>
           </li>
         ))}
       </ul>
