@@ -4,93 +4,77 @@ import "./TodoList.css";
 const TodoList = () => {
   const [tasks, setTasks] = useState([]); 
   const [newTask, setNewTask] = useState("");
+  const username = "camberotje12324";  //CON ESTE USUARIO DETERMINO DENTRO DE LA VARIABLE CON SIGNO DE DOLAR EL USUARIO QUE QUIERO CONSEGUIR
 
-  
   useEffect(() => {
-
     const busquedaDeUsuario = async () => {
       try {
-        // 👉 Hacemos la petición GET
-        // fetch por defecto hace una petición GET, por eso no necesitamos especificar el método
         const response = await fetch(
-          "https://playground.4geeks.com/todo/users/camberotje12324"
+          `https://playground.4geeks.com/todo/users/${username}`   //VARIABLE CON SIGNO DE DOLAR DONDE VOY A LOCALIZAR EL USUARIO QUE HE DETERMINADO ARRIBA
         );
   
-        // 👉 Verificamos si la petición fue exitosa
         if (!response.ok) {
           throw new Error("¡Vaya! No hemos podido obtener las tareas!");
         }
   
-        // 👉 Convertimos la respuesta a JSON
         const data = await response.json();
-  
-        // 👉 Guardamos los datos en el estado
         setTasks(data.todos);
 
+      //CREO UN TRY CATCH DE UN METODO POST DENTRO DEL CATCH DEL METODO GET PARA CREAR EL USUARIO EN CASO QUE NO EXISTA
       } catch (error) {
         try {
-          // 👉 Hacemos la petición POST
-          const response = await fetch("https://playground.4geeks.com/todo/users/camberotje12324", {
-            method: 'POST', // 👈 Especificamos que es POST
+          const response = await fetch(`https://playground.4geeks.com/todo/users/${username}`, {
+            method: 'POST',
             headers: {
-              'Content-Type': 'application/json', // 👈 Indicamos que enviamos JSON
+              'Content-Type': 'application/json',
             },
-            // 👉 Convertimos nuestro objeto a string JSON
             body: JSON.stringify({
-              name: "camberotje12324"
+              name: username
             }),
           });
     
           if (!response.ok) {
             throw new Error('Error al crear la tarea');
           }
-    
-          const data = await response.json();
-          fetchTasks()
+          await response.json();
+          fetchTasks();  //LLAMO A LA FUNCION UNA VEZ TODO ESTE BIEN 
         } catch (error) {
-          console.log(error)
+          console.log(error);
+
         }
       } 
     };
 
-    busquedaDeUsuario()
-    
-  },[])
+    busquedaDeUsuario();
+  }, []);
 
+
+  //METODO GET PARA CREAR TAREAS
   const fetchTasks = async () => {
     try {
-      // 👉 Hacemos la petición GET
-      // fetch por defecto hace una petición GET, por eso no necesitamos especificar el método
       const response = await fetch(
-        "https://playground.4geeks.com/todo/users/camberotje12324"
+        `https://playground.4geeks.com/todo/users/${username}`
       );
 
-      // 👉 Verificamos si la petición fue exitosa
       if (!response.ok) {
         throw new Error("¡Vaya! No hemos podido obtener las tareas!");
       }
 
-      // 👉 Convertimos la respuesta a JSON
       const data = await response.json();
-
-      // 👉 Guardamos los datos en el estado
       setTasks(data.todos);
     } catch (error) {
-      
-    } 
+      console.log(error);
+    }
   };
-
+  //METODO POST PARA CREAR TAREAS
   const handleAddTask = async () => {
     if (newTask.trim() === "") return;
-
     try {
-      // 👉 Hacemos la petición POST
-      const response = await fetch('https://playground.4geeks.com/todo/todos/camberotje12324', {
-        method: 'POST', // 👈 Especificamos que es POST
+      const response = await fetch(`https://playground.4geeks.com/todo/todos/${username}`, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json', // 👈 Indicamos que enviamos JSON
+          'Content-Type': 'application/json',
         },
-        // 👉 Convertimos nuestro objeto a string JSON
         body: JSON.stringify({
           label: newTask,
           is_done: false
@@ -102,38 +86,30 @@ const TodoList = () => {
       }
 
       const data = await response.json();
-      console.log(data)
       setTasks([...tasks, data]);
       setNewTask("");
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-
   };
 
-  const handleDeleteTask = async (id) => {
 
+  //METODO DELETE PARA ELIMINAR LAS TAREAS
+  const handleDeleteTask = async (id) => {
     try {
-      // 👉 Hacemos la petición DELETE
       const response = await fetch(
         `https://playground.4geeks.com/todo/todos/${id}`,
         {
-          method: 'DELETE', // 👈 Especificamos que es DELETE
+          method: 'DELETE',
         }
       );
 
       if (!response.ok) throw new Error('Error al borrar la tarea');
 
-      // Si todo va bien, actualizamos la lista local
-      // Esto se llama "Optimistic Update" - actualizamos la UI antes de
-      // tener confirmación del servidor, asumiendo que todo irá bien
-
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
-
     } catch (error) {
-    console.log(error)
+      console.log(error);
     }
-
   };
 
   const handleKeyDown = (e) => {
