@@ -5,8 +5,56 @@ const TodoList = () => {
   const [tasks, setTasks] = useState([]); 
   const [newTask, setNewTask] = useState("");
 
+  
   useEffect(() => {
-    fetchTasks()
+
+    const busquedaDeUsuario = async () => {
+      try {
+        // 👉 Hacemos la petición GET
+        // fetch por defecto hace una petición GET, por eso no necesitamos especificar el método
+        const response = await fetch(
+          "https://playground.4geeks.com/todo/users/camberotje12324"
+        );
+  
+        // 👉 Verificamos si la petición fue exitosa
+        if (!response.ok) {
+          throw new Error("¡Vaya! No hemos podido obtener las tareas!");
+        }
+  
+        // 👉 Convertimos la respuesta a JSON
+        const data = await response.json();
+  
+        // 👉 Guardamos los datos en el estado
+        setTasks(data.todos);
+
+      } catch (error) {
+        try {
+          // 👉 Hacemos la petición POST
+          const response = await fetch("https://playground.4geeks.com/todo/users/camberotje12324", {
+            method: 'POST', // 👈 Especificamos que es POST
+            headers: {
+              'Content-Type': 'application/json', // 👈 Indicamos que enviamos JSON
+            },
+            // 👉 Convertimos nuestro objeto a string JSON
+            body: JSON.stringify({
+              name: "camberotje12324"
+            }),
+          });
+    
+          if (!response.ok) {
+            throw new Error('Error al crear la tarea');
+          }
+    
+          const data = await response.json();
+          fetchTasks()
+        } catch (error) {
+          console.log(error)
+        }
+      } 
+    };
+
+    busquedaDeUsuario()
+    
   },[])
 
   const fetchTasks = async () => {
@@ -14,7 +62,7 @@ const TodoList = () => {
       // 👉 Hacemos la petición GET
       // fetch por defecto hace una petición GET, por eso no necesitamos especificar el método
       const response = await fetch(
-        "https://playground.4geeks.com/todo/users/camberotje"
+        "https://playground.4geeks.com/todo/users/camberotje12324"
       );
 
       // 👉 Verificamos si la petición fue exitosa
@@ -28,7 +76,7 @@ const TodoList = () => {
       // 👉 Guardamos los datos en el estado
       setTasks(data.todos);
     } catch (error) {
-      console.log(error)
+      
     } 
   };
 
@@ -37,7 +85,7 @@ const TodoList = () => {
 
     try {
       // 👉 Hacemos la petición POST
-      const response = await fetch('https://playground.4geeks.com/todo/todos/camberotje', {
+      const response = await fetch('https://playground.4geeks.com/todo/todos/camberotje12324', {
         method: 'POST', // 👈 Especificamos que es POST
         headers: {
           'Content-Type': 'application/json', // 👈 Indicamos que enviamos JSON
